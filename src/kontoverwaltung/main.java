@@ -6,62 +6,118 @@ public class main {
 
 	public static void main(String[] args) {
 		ArrayList<Konto> kontenListe = new ArrayList<Konto>();
-		int anzahlErstellterKonten = 3;
+		ArrayList<Integer> geloeschteKonten = new ArrayList<Integer>();
+		int anzahlErstellterKonten = 3; //3 Aufgrund der 3 bereits erstellten Beispiel Konten
 		Scanner scan = new Scanner(System.in);
 		Scanner scanStr = new Scanner(System.in);
 		int auswahl = -1;
 		
-		kontenListe.add(new Konto("B","B",200,20,1));
-		kontenListe.add(new Konto("A","A",300,30,2));
-		kontenListe.add(new Konto("C","C",100,10,3));
+		//3 Beispiel Konten
+		kontenListe.add(new Konto("B_vor","B_nach",200,20,1));
+		kontenListe.add(new Konto("A_vor","A_nach",300,30,2));
+		kontenListe.add(new Konto("C_vor","C_nach",100,10,3));
 		
 		while(auswahl != 0){
             auswahl = printMenu();
             
             switch(auswahl){
+            //Konto hinzufügen
             case 1:
                 Konto neuesKonto = neuesKonto(anzahlErstellterKonten);
                 kontenListe.add(neuesKonto);
                 anzahlErstellterKonten++;
                 break;
                 
+            //Konto anzeigen
             case 2:
                 System.out.println("Welches Konto soll angezeigt werden? (ID angeben)");
-                int temp = scan.nextInt();
-                System.out.println(kontenListe.get(temp-1).Output());
+                int input1 = scan.nextInt();
+                
+                //-1 da die IDs bei 1 und nicht bei 0 starten
+                if(KontoVorhanden(input1-1, kontenListe)){
+                    System.out.println(kontenListe.get(input1-1).Output());
+                }
+                else{
+                    System.out.println("Konto nicht vorhanden!");
+                }
                 break;
                 
+            //Ein- oder Auszahlung
             case 3:
                 System.out.println("Welches Konto betrifft Ihre Ein/Auszahlung (ID angeben)");
                 int konto = scan.nextInt();
-                System.out.println("Was möchten Sie ausführen?");
-                System.out.println("1 - Einzahlung");
-                System.out.println("2 - Auszahlung");
-                int auswahlZahlung = scan.nextInt();
-                System.out.println("Betrag eingeben");
-                String betragStr = scanStr.nextLine();
-                
-                if(istDouble(betragStr)){
-                    double betrag = stringzuDouble(betragStr);
-                    if(auswahlZahlung == 1){
-                        kontenListe.get(konto-1).Einzahlung(betrag);
-                        kontenListe.get(konto-1).einzahlungErfolgt(betrag);
+                if(KontoVorhanden(konto-1, kontenListe)){
+                    
+                    System.out.println("Was möchten Sie ausführen?");
+                    System.out.println("1 - Einzahlung");
+                    System.out.println("2 - Auszahlung");
+                    int auswahlZahlung = scan.nextInt();
+                    System.out.println("Betrag eingeben");
+                    String betragStr = scanStr.nextLine();
+                    
+                    if(istDouble(betragStr)){
+                        double betrag = stringzuDouble(betragStr);
+                        if(auswahlZahlung == 1){
+                            kontenListe.get(konto-1).Einzahlung(betrag);
+                            kontenListe.get(konto-1).einzahlungErfolgt(betrag);
+                        }
+                        else if(auswahlZahlung == 2){
+                            kontenListe.get(konto-1).Auszahlung(betrag);
+                            kontenListe.get(konto-1).auszahlungErfolgt(betrag);
+                        }
                     }
-                    else if(auswahlZahlung == 2){
-                        kontenListe.get(konto-1).Einzahlung(betrag);
-                        kontenListe.get(konto-1).einzahlungErfolgt(betrag);
+                    else{
+                        System.out.println("Fehlerhafte Eingabe!");
                     }
                 }
                 else{
-                    System.err.println("Fehlerhafte Eingabe!");
+                    System.out.println("Konto nicht vorhanden!");
                 }
-                break;
                 
+                break;
+            
+            //Überweisung
             case 4:
+            	System.out.println("Bitte wählen Sie das Ihnhaber-Konto mit der passenden Konto-ID aus");
+            	String inhaberIDStr = scanStr.nextLine();
+            	int inhaberID = 0;
+            	int empfaengerID = 0;
+            	
+            	if(istInteger(inhaberIDStr)){
+            		inhaberID = stringZuInteger(inhaberIDStr)-1;
+            		if(KontoVorhanden(inhaberID, kontenListe) == false){
+            		    System.out.println("Konto nicht vorhanden!");
+            		    break;
+            		}
+            	}
+            	System.out.println("Bitte geben Sie das Empfänger-Konto mit der passenden Konto-ID ein");
+            	String empfaengerIDStr = scanStr.nextLine();
+            	if(istInteger(empfaengerIDStr)){
+            		empfaengerID = stringZuInteger(empfaengerIDStr)-1;
+            		if(KontoVorhanden(empfaengerID, kontenListe) == false){
+                        System.out.println("Konto nicht vorhanden!");
+                        break;
+                    }
+            	}
+            	System.out.println("Bitte geben Sie den zu überweisenden Betrag ein");
+            	String betragStr2 = scanStr.nextLine();
+            	double betrag = 0;
+            	if(istDouble(betragStr2)){
+            		betrag = stringzuDouble(betragStr2);
+            	}
+            	else{
+            	    System.out.println("Fehlerhafte Eingabe!");
+            	    break;
+            	}
+                ueberweisung(kontenListe.get(inhaberID), kontenListe.get(empfaengerID), betrag);
+            
+            //Alle Konten anzeigen
+            case 5:
                 alleKontenAusgeben(kontenListe);
                 break;
                 
-            case 5:
+            //Konten anzeigen und sortieren
+           case 6:
                 System.out.println("Wie möchten Sie sortieren?");
                 System.out.println("1 - Vorname - aufsteigend");
                 System.out.println("2 - Vorname - absteigend");
@@ -70,44 +126,57 @@ public class main {
                 System.out.println("5 - Kontostand - aufsteigend");
                 System.out.println("6 - Kontostand - absteigend");
                 int temp3 = scan.nextInt();
-                Sortieren(temp3, kontenListe);                
+               
+                ArrayList<Konto> tempKontenListeCase6 = kontenListeOhneGeloeschte(kontenListe);
+                Sortieren(temp3, tempKontenListeCase6, kontenListe);
                 break;
                 
-            case 6:
+            //Konten durchsuchen
+          case 7:
                 System.out.println("Nach was möchten Sie suchen?");
                 System.out.println("1 - Vorname");
                 System.out.println("2 - Nachname");
                 System.out.println("3 - Kontostand");
                 System.out.println("4 - Kontonummer");
-                int temp4 = scan.nextInt();
+                int inputCase7 = scan.nextInt();
                 System.out.println("Geben Sie Ihren Suchbegriff ein");
                 String suchbegriff = scanStr.nextLine();
-
-                if(temp4 < 3){
-                    Suchen(temp4, suchbegriff, -1, kontenListe);
+                
+                //Geloeschte Konten für die Suche temporär entfernen
+                
+                ArrayList<Konto> tempKontenListeCase7 = kontenListeOhneGeloeschte(kontenListe);
+             
+                //String Suche
+                if(inputCase7 < 3){
+                    Suchen(inputCase7, suchbegriff, -1, tempKontenListeCase7);
                 }
-                else if(temp4 < 5){
-                    System.out.println("Bitte definieren Sie Ihre Suche!");
-                    System.out.println("1 - Zahl < "+suchbegriff);
-                    System.out.println("2 - Zahl > "+suchbegriff);
-                    System.out.println("3 - Zahl = "+suchbegriff);
-                    int operator = scan.nextInt();
-                    Suchen(temp4, suchbegriff, operator, kontenListe);
-                }
+                //Integer Suche
+                else if(inputCase7 < 5){
+                        System.out.println("Bitte definieren Sie Ihre Suche!");
+                        System.out.println("1 - Zahl < "+suchbegriff);
+                        System.out.println("2 - Zahl > "+suchbegriff);
+                        System.out.println("3 - Zahl = "+suchbegriff);
+                        int operator = scan.nextInt();
+                        Suchen(inputCase7, suchbegriff, operator, tempKontenListeCase7);
+                    }
                 else{
                     System.err.println("Fehlerhafte Eingabe!");
                 }
+                
                 break;
                 
-            case 7:
+            //Konto löschen
+            case 8:
                 System.out.println("Welches Konto soll gelöscht werden? (ID angeben)");
-                int temp5 = scan.nextInt();
-                kontoLoeschen(temp5, kontenListe);
+                int inputCase8 = scan.nextInt();
+                geloeschteKonten = kontoLoeschen(inputCase8, kontenListe, geloeschteKonten);               
                 break;
                 
+            //Programm beenden
             case 0:
                 System.exit(0);
-                break; 
+                break;
+                
             default:
                 System.err.println("Fehlerhafte Eingabe!");
                 break;
@@ -116,18 +185,20 @@ public class main {
 		}
 	}
 	
+	//Zeichnet Menü und gibt Auswahl zurück
 	private static int printMenu(){
 	    Scanner sc = new Scanner(System.in);
-	    System.err.println("-----------------------------------------------");
+	    System.out.println("-----------------------------------------------");
         System.out.println("Menü");
         System.out.println("-----------------------------------------------");
         System.out.println("1 - Konto hinzufügen");
         System.out.println("2 - Konto anzeigen");
         System.out.println("3 - Ein/Auszahlung");
-        System.out.println("4 - Alle Konten anzeigen");
-        System.out.println("5 - Sortieren");
-        System.out.println("6 - Suchen");
-        System.out.println("7 - Konto löschen");
+        System.out.println("4 - Überweisung");
+        System.out.println("5 - Alle Konten anzeigen");
+        System.out.println("6 - Sortieren");
+        System.out.println("7 - Suchen");
+        System.out.println("8 - Konto löschen");
         System.out.println("0 - Programm beenden");
         System.out.println("-----------------------------------------------");
         System.out.println("Ihre Auswahl:");
@@ -151,16 +222,50 @@ public class main {
         System.out.println("Kontostand eingeben");
         kontostandStr = scan2.nextLine();
         
+        //Prüfung ob Eingabe Zahlen sind und Umwandung in Int/Double
         kontonummer = stringZuInteger(kontonummerStr);
         kontostand = stringzuDouble(kontostandStr);
         
-        Konto konto = new Konto(vorname,name,kontonummer,kontostand, anzahlErstellterKonten+1);
+        //ID wird nach Anzahl der Konten vergeben. Konto 1 = ID 1 etc.
+        Konto konto = new Konto(vorname,name,kontonummer,kontostand,anzahlErstellterKonten+1);
 
         return konto;
 	}
-		
-	private static void kontoLoeschen(int index, ArrayList<Konto> kontenListe){
-	    kontenListe.remove(index-1);
+	
+	private static boolean KontoVorhanden(int index, ArrayList<Konto> kontenListe){
+	    try {
+	        if(kontenListe.get(index) != null){
+	            return true;
+	        }
+	    }
+	    catch (IndexOutOfBoundsException e){
+	        return false;
+	        }
+	    return false;
+	}
+	
+	private static ArrayList<Integer> kontoLoeschen(int index, ArrayList<Konto> kontenListe, ArrayList<Integer> geloeschteKonten){
+	    int interneID = index-1;
+	    boolean geloescht = false;
+	    	        
+	        for (Konto konto: kontenListe)
+	        {
+	            if(konto != null){
+	                if(konto.getId() == index){
+	                    Konto element = null;
+	                    //Konto an Index "interneID" auf null (=element) setzen
+	                    kontenListe.set(interneID, element);
+	                    geloeschteKonten.add(interneID);
+	                    System.out.println("Konto "+index +" erfolgreich gelöscht." );
+	                    geloescht = true;
+	                    break;
+	                }
+	            }
+	        }
+	        if (geloescht == false){
+                System.out.println("Eingegebene Konto-ID nicht vorhanden!");
+            }
+	    return geloeschteKonten;
 	}
 	
 	private static void Suchen(int auswahl, String suchbegriff, int operator, ArrayList<Konto> kontenListe){
@@ -199,55 +304,55 @@ public class main {
 	    }
 	}
 	
-	private static void Sortieren(int auswahl, ArrayList<Konto> kontenListe){
+	private static void Sortieren(int auswahl, ArrayList<Konto> tempkontenListe, ArrayList<Konto> kontenListe){
 	    switch (auswahl){
 	    
 	    case 1:
-	        int[] temp=Algorithmen.NamenAufsteigendSortieren(kontenListe, "vorname");
-	        for (int i=0; i<temp.length; i++)
+	        int[] ergebnisCase1=Algorithmen.NamenAufsteigendSortieren(tempkontenListe, "vorname");
+	        for (int i=0; i<ergebnisCase1.length; i++)
 	        {
-	            System.out.println(kontenListe.get(temp[i]-1).Output());
+	            System.out.println(kontenListe.get(ergebnisCase1[i]-1).Output());
 	        }
 	        break;
 	        
 	    case 2:
-	        int[] temp2=Algorithmen.NamenAbsteigendSortieren(kontenListe, "vorname");
-	        for (int i=0; i<temp2.length; i++)
+	        int[] ergebnisCase2=Algorithmen.NamenAbsteigendSortieren(tempkontenListe, "vorname");
+	        for (int i=0; i<ergebnisCase2.length; i++)
 	        {
-	            System.out.println(kontenListe.get(temp2[i]-1).Output());
+	            System.out.println(kontenListe.get(ergebnisCase2[i]-1).Output());
 	        }
 	        break;
 	          
 	    case 3:
-	        int[] temp3=Algorithmen.NamenAufsteigendSortieren(kontenListe, "name");
-            for (int i=0; i<temp3.length; i++)
+	        int[] ergebnisCase3=Algorithmen.NamenAufsteigendSortieren(tempkontenListe, "name");
+            for (int i=0; i<ergebnisCase3.length; i++)
             {
-                System.out.println(kontenListe.get(temp3[i]-1).Output());
+                System.out.println(kontenListe.get(ergebnisCase3[i]-1).Output());
             }
             
 	        break;
 	        
 	    case 4:
-	        int[] temp4=Algorithmen.NamenAbsteigendSortieren(kontenListe, "name");
-            for (int i=0; i<temp4.length; i++)
+	        int[] ergebnisCase4=Algorithmen.NamenAbsteigendSortieren(tempkontenListe, "name");
+            for (int i=0; i<ergebnisCase4.length; i++)
             {
-                System.out.println(kontenListe.get(temp4[i]-1).Output());
+                System.out.println(kontenListe.get(ergebnisCase4[i]-1).Output());
             }
 	        break;
 	        
 	    case 5:
-	        int[] temp5=Algorithmen.KontostandAufsteigendSortieren(kontenListe);
-	        for (int i=0; i<temp5.length; i++)
+	        int[] ergebnisCase5=Algorithmen.KontostandAufsteigendSortieren(tempkontenListe);
+	        for (int i=0; i<ergebnisCase5.length; i++)
 	        {
-	            System.out.println(kontenListe.get(temp5[i]-1).Output()); 
+	            System.out.println(kontenListe.get(ergebnisCase5[i]-1).Output()); 
 	        }
 	        break;
 	        
 	    case 6:
-	        int[] temp6=Algorithmen.KontostandAbsteigendSortieren(kontenListe);
-	        for (int i=0; i<temp6.length; i++)
+	        int[] ergebnisCase6=Algorithmen.KontostandAbsteigendSortieren(tempkontenListe);
+	        for (int i=0; i<ergebnisCase6.length; i++)
 	        {
-	            System.out.println(kontenListe.get(temp6[i]-1).Output());  
+	            System.out.println(kontenListe.get(ergebnisCase6[i]-1).Output());  
 	        }
 	        break;
 	        
@@ -323,6 +428,23 @@ public class main {
         {
             return false;
         }
+    }
+    
+    private static void ueberweisung(Konto inhaber, Konto empfaenger, double betrag){
+    	inhaber.Auszahlung(betrag);
+    	empfaenger.Einzahlung(betrag);
+    }
+    
+    private static ArrayList<Konto> kontenListeOhneGeloeschte(ArrayList<Konto> kontenListe){
+        ArrayList<Konto> neueKontenListe = new ArrayList<Konto>();
+        
+        for (Konto konto: kontenListe)
+        {
+            if(konto != null){
+                neueKontenListe.add(konto);
+            }
+        }
+        return neueKontenListe;
     }
     
     private static void eingabeAbwarten(){

@@ -3,6 +3,8 @@ import java.util.ArrayList;
 
 public class Algorithmen {
 
+    //Groﬂ kleinschreibung
+    
 	public static void SucheNachKontonummer(int suchbegriff, int operator, ArrayList<Konto> kontenListe){
 	    System.out.println("Folgende Treffer wurden gefunden:");
 	    for (Konto konto: kontenListe)
